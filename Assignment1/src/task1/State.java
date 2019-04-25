@@ -1,13 +1,18 @@
 package task1;
 import java.util.*;
+
+import eventSchedulingUtils.Event;
+import eventSchedulingUtils.GlobalSimulation;
+
 import java.io.*;
 
 class State extends GlobalSimulation{
 	
 	// Here follows the state variables and other variables that might be needed
 	// e.g. for measurements
-	public int numberInQueue = 0, accumulated = 0, noMeasurements = 0;
-
+	public int numberInQueueOne = 0, numberInQueueTwo, numberRejected = 0, accumulated = 0, accumulatedRejected = 0, noMeasurements = 0;
+	public double lambda_measure = 1/5.0;
+	public double lambda_Q1 = 1/2.1;
 	Random slump = new Random(); // This is just a random number generator
 	
 	
@@ -18,8 +23,11 @@ class State extends GlobalSimulation{
 			case ARRIVAL:
 				arrival();
 				break;
-			case READY:
-				ready();
+			case READY_ONE:
+				readyQ1();
+				break;
+			case READY_TWO:
+				readyQ2();
 				break;
 			case MEASURE:
 				measure();
@@ -33,21 +41,35 @@ class State extends GlobalSimulation{
 	// things are getting more complicated than this.
 	
 	private void arrival(){
-		if (numberInQueue == 0)
-			insertEvent(READY, time + 2*slump.nextDouble());
-		numberInQueue++;
-		insertEvent(ARRIVAL, time + 2.5*slump.nextDouble());
+		numberInQueueOne++;
+		if (numberInQueueOne == 1) {
+			insertEvent(READY_ONE, time + Math.log(1-slump.nextDouble())/(-lambda_Q1));			
+		} else if (numberInQueueOne == 11) {
+			numberInQueueOne--;
+			numberRejected++;
+		}
+		insertEvent(ARRIVAL, time + 1);
 	}
 	
-	private void ready(){
-		numberInQueue--;
-		if (numberInQueue > 0)
-			insertEvent(READY, time + 2*slump.nextDouble());
+	private void readyQ1(){
+		numberInQueueOne--;
+		if (numberInQueueOne > 0)
+			insertEvent(READY_ONE, time + Math.log(1-slump.nextDouble())/(-lambda_Q1));
+		numberInQueueTwo++;
+		if (numberInQueueTwo == 1)
+			insertEvent(READY_TWO, time + 2);
+	}
+	
+	private void readyQ2() {
+		numberInQueueTwo--;
+		if (numberInQueueTwo > 0)
+			insertEvent(READY_TWO, time + 2);
 	}
 	
 	private void measure(){
-		accumulated = accumulated + numberInQueue;
+		accumulatedRejected = accumulatedRejected + numberRejected;
+		accumulated = accumulated + numberInQueueOne;
 		noMeasurements++;
-		insertEvent(MEASURE, time + slump.nextDouble()*10);
+		insertEvent(MEASURE, time + Math.log(1-slump.nextDouble())/(-lambda_measure));
 	}
 }
