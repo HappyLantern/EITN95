@@ -10,7 +10,7 @@ class State extends GlobalSimulation{
 	
 	// Here follows the state variables and other variables that might be needed
 	// e.g. for measurements
-	public int numberInQueueOne = 0, numberInQueueTwo, numberRejected = 0, accumulated = 0, accumulatedRejected = 0, noMeasurements = 0;
+	public int noInQueueOne = 0, noInQueueTwo, noArrived = 0, noRejected = 0, accumulated = 0, accumulatedRejected = 0, noMeasurements = 0;
 	public double lambda_measure = 1/5.0;
 	public double lambda_Q1 = 1/2.1;
 	Random slump = new Random(); // This is just a random number generator
@@ -41,34 +41,34 @@ class State extends GlobalSimulation{
 	// things are getting more complicated than this.
 	
 	private void arrival(){
-		numberInQueueOne++;
-		if (numberInQueueOne == 1) {
+		noArrived++;
+		noInQueueOne++;
+		if (noInQueueOne == 1) {
 			insertEvent(READY_ONE, time + Math.log(1-slump.nextDouble())/(-lambda_Q1));			
-		} else if (numberInQueueOne == 11) {
-			numberInQueueOne--;
-			numberRejected++;
-		}
-		insertEvent(ARRIVAL, time + 1);
+		} else if (noInQueueOne == 11) {
+			noInQueueOne--;
+			noRejected++;
+		}		
+		insertEvent(ARRIVAL, time + 5);
 	}
 	
 	private void readyQ1(){
-		numberInQueueOne--;
-		if (numberInQueueOne > 0)
+		noInQueueOne--;
+		if (noInQueueOne > 0)
 			insertEvent(READY_ONE, time + Math.log(1-slump.nextDouble())/(-lambda_Q1));
-		numberInQueueTwo++;
-		if (numberInQueueTwo == 1)
+		noInQueueTwo++;
+		if (noInQueueTwo == 1)
 			insertEvent(READY_TWO, time + 2);
 	}
 	
 	private void readyQ2() {
-		numberInQueueTwo--;
-		if (numberInQueueTwo > 0)
+		noInQueueTwo--;
+		if (noInQueueTwo > 0)
 			insertEvent(READY_TWO, time + 2);
 	}
 	
 	private void measure(){
-		accumulatedRejected = accumulatedRejected + numberRejected;
-		accumulated = accumulated + numberInQueueOne;
+		accumulated += noArrived;
 		noMeasurements++;
 		insertEvent(MEASURE, time + Math.log(1-slump.nextDouble())/(-lambda_measure));
 	}
