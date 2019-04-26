@@ -1,4 +1,9 @@
+package task3;
+
 import java.util.*;
+
+import eventSchedulingUtils.Event;
+import eventSchedulingUtils.GlobalSimulation;
 
 import java.io.*;
 
@@ -6,8 +11,10 @@ class State extends GlobalSimulation{
 	
 	// Here follows the state variables and other variables that might be needed
 	// e.g. for measurements
-	public int numberInQueueOne = 0, numberInQueueTwo, accumulated = 0, noMeasurements = 0;
-	public double accumulatedTime = 0;
+	public int numberInQueueOne = 0, numberInQueueTwo, accumulated = 0, accumulatedOne = 0, accumulatedTwo = 0, noMeasurements = 0, noArrived = 0;
+	public double accumulatedTime = 0, queueTime = 0;
+	public static final double MU = 1;
+	private static final double MEAN_ONE = 2.0, MEAN_TWO = 1.5, MEAN_THREE = 1.1;
 	Random slump = new Random(); // This is just a random number generator
 	
 	
@@ -36,14 +43,20 @@ class State extends GlobalSimulation{
 	// things are getting more complicated than this.
 	
 	private void arrival(){
-		double meanArrivalTime = 2.0; // 2, 1.5, 1.1
+		double meanArrivalTime = MEAN_ONE;
+		//double meanArrivalTime = MEAN_TWO;
+		//double meanArrivalTime = MEAN_THREE;
 		double lambda = 1 / meanArrivalTime;
-
+		double meanServiceTime = 1;
+		double mu = 1 / meanServiceTime;
+		
 		numberInQueueOne++;
-		boolean wasEmpty = numberInQueueOne == 1;
-		if (wasEmpty)
-			insertEvent(READY_ONE, time + Math.log(1-slump.nextDouble())/(-lambda));			
-		insertEvent(ARRIVAL, time + 1);
+		if (numberInQueueOne == 1) {
+			double expTime = Math.log(1-slump.nextDouble())/(-mu);
+			queueTime += expTime;
+			insertEvent(READY_ONE, time + expTime);		
+		}
+		insertEvent(ARRIVAL, time + Math.log(1-slump.nextDouble())/(-lambda));
 	}
 	
 	private void readyQ1(){
@@ -51,14 +64,18 @@ class State extends GlobalSimulation{
 		double mu = 1 / meanServiceTime;
 
 		numberInQueueOne--;
-		boolean stillNotEmpty = numberInQueueOne > 0;
-		if (stillNotEmpty)
-			insertEvent(READY_ONE, time + Math.log(1-slump.nextDouble())/(-mu));
+		if (numberInQueueOne > 0) {
+			double expTime = Math.log(1-slump.nextDouble())/(-mu);
+			queueTime += expTime;
+			insertEvent(READY_ONE, time + expTime);
+		}
 
 		numberInQueueTwo++;
-		boolean queueTwoWasEmpty = numberInQueueTwo == 1;
-		if (queueTwoWasEmpty)
-			insertEvent(READY_TWO, time + 2);
+		if (numberInQueueTwo == 1) {
+			double expTime = Math.log(1-slump.nextDouble())/(-mu);
+			queueTime += expTime;
+			insertEvent(READY_TWO, time + expTime);
+		}
 	}
 	
 	private void readyQ2() {
@@ -66,17 +83,21 @@ class State extends GlobalSimulation{
 		double mu = 1 / meanServiceTime;
 
 		numberInQueueTwo--;
-		boolean queueTwoStillNotEmpty = numberInQueueTwo > 0;
-		if (queueTwoStillNotEmpty)
-			insertEvent(READY_TWO, time + Math.log(1-slump.nextDouble())/(-mu));
+		if (numberInQueueTwo > 0) {
+			double expTime = Math.log(1-slump.nextDouble())/(-mu);
+			queueTime += expTime;
+			insertEvent(READY_TWO, time + expTime);
+		}
 	}
 	
 	private void measure(){
 		double meanMeasureTime = 5.0;
-		double lambda = 1/meanMeasureTime;
+		double lambda = 1 / meanMeasureTime;
 
-		accumulated = accumulated + numberInQueueOne;
-		accumulatedTime = accumulatedTime + time;
+		accumulatedOne += numberInQueueOne;
+		accumulatedTwo += numberInQueueTwo;
+		accumulated += numberInQueueOne + numberInQueueTwo;
+		accumulatedTime += queueTime;
 		noMeasurements++;
 		insertEvent(MEASURE, time + Math.log(1-slump.nextDouble())/(-lambda));
 	}

@@ -1,4 +1,10 @@
+package task3;
+
 import java.util.*;
+
+import eventSchedulingUtils.Event;
+import eventSchedulingUtils.GlobalSimulation;
+
 import java.io.*;
 
 public class MainSimulation extends GlobalSimulation {
@@ -12,14 +18,18 @@ public class MainSimulation extends GlobalSimulation {
 
 			// The main simulation loop
 
-			while (time < 1000000) {
+			while (time < 10000000) {
 				actEvent = eventList.fetchEvent();
 				time = actEvent.eventTime;
 				actState.treatEvent(actEvent);
 			}
 
 			// Printing the result of the simulation, in this case a mean value
-			System.out.println("Mean number of customers" + 1.0 * actState.accumulated / actState.noMeasurements);
-			System.out.println("Mean time" + 1.0 * actState.accumulatedTime / actState.noMeasurements);
+			
+			double meanNumCustomers = 1.0 * actState.accumulated / actState.noMeasurements;
+			System.out.println("Mean number of customers: " + meanNumCustomers);
+			int numServers = 2;
+			double meanTime = (meanNumCustomers + numServers) * actState.MU;
+			System.out.println("Mean time: " + meanTime);
 	}
 }
