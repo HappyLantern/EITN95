@@ -9,7 +9,7 @@ import java.io.*;
 class State extends GlobalSimulation{
 	
 	public int customers, accumulated, noMeasurements = 0;
-	public static final double MEASURE_TIME = 4;
+	public static final double MEASURE_TIME = 1;
 	private static final double LAMBDA_ARRIVAL = 4;
 	private static final double SERVICE_TIME = 10;
 	private static final int SERVERS = 100;
