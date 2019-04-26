@@ -1,6 +1,7 @@
+package task3;
 import java.util.*;
 import java.io.*;
-
+import eventSchedulingUtils.*;
 public class MainSimulation extends GlobalSimulation {
 
 	public static void main(String[] args) throws IOException {
