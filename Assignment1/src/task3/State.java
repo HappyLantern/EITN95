@@ -1,9 +1,7 @@
 package task3;
 
 import java.util.*;
-
-import eventSchedulingUtils.Event;
-import eventSchedulingUtils.GlobalSimulation;
+import eventSchedulingUtils.*;
 
 import java.io.*;
 

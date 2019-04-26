@@ -42,7 +42,6 @@ class State extends GlobalSimulation{
 		}
 	}
 	
-	
 	// The following methods defines what should be done when an event takes place. This could
 	// have been placed in the case in treatEvent, but often it is simpler to write a method if 
 	// things are getting more complicated than this.
@@ -94,7 +93,6 @@ class State extends GlobalSimulation{
 		noJobB++;
         if (noJobA + noJobB == 1)
         	insertEvent(READY_TWO, time + SERVICE_TIME_B);
-
 	}
 	
 	private void measure() {
