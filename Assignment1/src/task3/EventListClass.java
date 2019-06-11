@@ -1,4 +1,4 @@
-package eventSchedulingUtils;
+package task3;
 
 public class EventListClass {
 	

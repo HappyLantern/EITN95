@@ -1,4 +1,4 @@
-package eventSchedulingUtils;
+package task4;
 
 public class GlobalSimulation{
 	

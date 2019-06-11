@@ -2,9 +2,6 @@ package task2;
 
 import java.util.*;
 
-import eventSchedulingUtils.Event;
-import eventSchedulingUtils.GlobalSimulation;
-
 import java.io.*;
 
 public class MainSimulation extends GlobalSimulation {

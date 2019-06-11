@@ -1,52 +1,56 @@
 package task5;
-import java.util.*;
 import java.io.*;
-
-//Denna klass ärver Global så att man kan använda time och signalnamnen utan punktnotation
-//It inherits Proc so that we can use time and the signal names without dot notation
 
 
 public class MainSimulation extends Global{
+	
+	private static final double ARRIVAL_TIME = 2;
 
     public static void main(String[] args) throws IOException {
-
-    	//Signallistan startas och actSignal deklareras. actSignal är den senast utplockade signalen i huvudloopen nedan.
-    	// The signal list is started and actSignal is declaree. actSignal is the latest signal that has been fetched from the 
-    	// signal list in the main loop below.
-
+    	
     	Signal actSignal;
     	new SignalList();
+    	
 
-    	//Här nedan skapas de processinstanser som behövs och parametrar i dem ges värden.
-    	// Here process instances are created (two queues and one generator) and their parameters are given values. 
-
-    	QS Q1 = new QS();
-    	Q1.sendTo = null;
+    	QS[] queues = new QS[5];
+    	for (int i = 0; i < queues.length; i++) {
+    		queues[i] = new QS();
+    		queues[i].index = i;
+    		queues[i].sendTo = null;
+    	}
+    	
+    	Dispatcher dispatcher = new Dispatcher(queues, Dispatcher.ROUND_ROBIN); // RANDOM / ROUND_ROBIN / SMALLEST_FIRST
 
     	Gen Generator = new Gen();
-    	Generator.lambda = 9; //Generator ska generera nio kunder per sekund  //Generator shall generate 9 customers per second
-    	Generator.sendTo = Q1; //De genererade kunderna ska skickas till kösystemet QS  // The generated customers shall be sent to Q1
-
-    	//Här nedan skickas de första signalerna för att simuleringen ska komma igång.
-    	//To start the simulation the first signals are put in the signal list
-
+    	Generator.lambda = 1/ARRIVAL_TIME;
+    	Generator.sendTo = dispatcher;
+ 
     	SignalList.SendSignal(READY, Generator, time);
-    	SignalList.SendSignal(MEASURE, Q1, time);
+    	SignalList.SendSignal(MEASURE, dispatcher, 10);
+    	for (int i = 0; i < queues.length; i++)
+    		SignalList.SendSignal(MEASURE, queues[i], 10);
 
-
-    	// Detta är simuleringsloopen:
-    	// This is the main loop
-
-    	while (time < 100000){
+    	while (time < 1000000) {
     		actSignal = SignalList.FetchSignal();
     		time = actSignal.arrivalTime;
     		actSignal.destination.TreatSignal(actSignal);
     	}
-
-    	//Slutligen skrivs resultatet av simuleringen ut nedan:
-    	//Finally the result of the simulation is printed below:
-
-    	System.out.println("Mean number of customers in queuing system: " + 1.0*Q1.accumulated/Q1.noMeasurements);
-
+    	
+    	double meanTime = 0;
+    	for (int i = 0; i < queues.length; i++) {
+    		double meanTimeInQueue = 0;
+    		for (int j = 0; j < queues[i].timeInSys.size(); j++) {
+    			meanTimeInQueue += queues[i].timeInSys.get(j);
+    		}
+    		if (queues[i].timeInSys.size() != 0)
+    			meanTime = meanTime + meanTimeInQueue / queues[i].timeInSys.size();
+    	}
+    	meanTime = meanTime / queues.length;
+		double meanNoCustomers = 1.0 * dispatcher.accumulated / dispatcher.noMeasurements;
+    	System.out.println("Lambda: " + 1/ARRIVAL_TIME);
+    	System.out.println("Mean time in system for customer: " + meanTime);
+    	System.out.println("Mean number of customers in queuing system: " + meanNoCustomers);
+    	System.out.println("Little's law: Lambda * meanTime: " + (1/ARRIVAL_TIME) * meanTime);
+    	
     }
 }
